@@ -1,4 +1,4 @@
-package com.medcore.app.ui.screens
+package com.example.medcore.ui.theme.screens.registerscreen
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
+import com.medcore.app.ui.screens.medCoreFieldColors
 import com.medcore.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)

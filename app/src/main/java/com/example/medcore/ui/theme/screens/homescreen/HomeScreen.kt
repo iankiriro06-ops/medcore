@@ -16,8 +16,11 @@ import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
+import com.example.medcore.ui.theme.MedCoreBottomBar
+import com.example.medcore.ui.theme.PremiumBadge
+import com.example.medcore.ui.theme.SectionHeader
 import com.medcore.app.data.models.*
-import com.medcore.app.ui.components.*
+import com.example.medcore.ui.theme.*
 import com.medcore.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)

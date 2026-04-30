@@ -6,7 +6,18 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.medcore.app.ui.screens.HomeScreen
+import com.medcore.app.ui.screens.LoginScreen
+import com.example.medcore.ui.theme.screens.registerscreen.RegisterScreen
+import com.example.medcore.ui.theme.screens.splashscreen.SplashScreen
+import com.example.medcore.ui.theme.screens.subscriptionScreen.SubscriptionScreen
+import com.example.medcore.ui.theme.screens.systemdetail.SystemDetailScreen
+import com.example.medcore.ui.theme.screens.topicScreen.TopicScreen
+import com.example.medcore.ui.theme.screens.quizScreen.QuizScreen
+import com.example.medcore.ui.theme.screens.progressScreen.ProgressScreen
+import com.example.medcore.ui.theme.screens.profileScreen.ProfileScreen
 import com.medcore.app.ui.screens.*
+
 
 sealed class Screen(val route: String) {
     object Splash       : Screen("splash")
@@ -129,7 +140,7 @@ fun MedCoreNavGraph(navController: NavHostController) {
             ProfileScreen(
                 onBack          = { navController.popBackStack() },
                 onSubscribeClick = { navController.navigate(Screen.Subscription.route) },
-                onLogout        = {
+                onSignOut        = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Home.route) { inclusive = true }
                     }

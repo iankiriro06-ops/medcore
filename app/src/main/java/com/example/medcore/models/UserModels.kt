@@ -17,7 +17,7 @@ data class User(
     val streakDays: Int     = 14
 )
 
-// ── Body Systems ────────────────────────────────────────────────────────────────
+// ── Body Systems ────────────────────────────────────────────────────────
 
 data class BodySystem(
     val id: String,
@@ -122,7 +122,7 @@ val mockPlans = listOf(
     SubscriptionPlan(
         id = "monthly",
         name = "Monthly",
-        price = "$9.99",
+        price = "$3.99",
         period = "/ month",
         features = listOf(
             PlanFeature("All 11 body systems", true),
@@ -136,7 +136,7 @@ val mockPlans = listOf(
     SubscriptionPlan(
         id = "yearly",
         name = "Annual",
-        price = "$59.99",
+        price = "$20.00",
         period = "/ year",
         isBestValue = true,
         features = listOf(

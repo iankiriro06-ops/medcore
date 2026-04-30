@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "927497815977",
+    "project_id": "medcore-daf3f",
+    "storage_bucket": "medcore-daf3f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:927497815977:android:ba74f6fa90dfb22dabe6b8",
+        "android_client_info": {
+          "package_name": "com.example.medcore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQ_CKkMG4353G0cC_2hWbvFhymn82ePjY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

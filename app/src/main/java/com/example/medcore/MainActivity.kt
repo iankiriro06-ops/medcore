@@ -1,4 +1,4 @@
-package com.medcore.app
+package com.example.medcore
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

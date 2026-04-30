@@ -1,8 +1,9 @@
-package com.medcore.app.ui.screens
+package com.example.medcore.ui.theme.screens.splashscreen
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.*
@@ -60,12 +61,12 @@ fun SplashScreen(onNavigate: () -> Unit) {
                     .scale(scale)
                     .background(
                         Brush.radialGradient(listOf(CyanSubtle, Color.Transparent)),
-                        shape = androidx.compose.foundation.shape.CircleShape
+                        shape = CircleShape
                     )
                     .border(
                         2.dp,
                         Brush.linearGradient(listOf(CyanCore, IndigoCore)),
-                        androidx.compose.foundation.shape.CircleShape
+                        CircleShape
                     ),
                 contentAlignment = Alignment.Center
             ) {

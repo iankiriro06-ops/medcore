@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "927497815977",
+    "firebase_url": "https://medcore-daf3f-default-rtdb.firebaseio.com",
     "project_id": "medcore-daf3f",
     "storage_bucket": "medcore-daf3f.firebasestorage.app"
   },
@@ -12,7 +13,20 @@
           "package_name": "com.example.medcore"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "927497815977-3ci5q5dmbsf397t8vjuns4bj4s3vhp4l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.medcore",
+            "certificate_hash": "a51511acaf38fdeb53ce8f95de74613a4fd40445"
+          }
+        },
+        {
+          "client_id": "927497815977-6rvrjgvq8v150ldr6on2mdeb63hftcci.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBQ_CKkMG4353G0cC_2hWbvFhymn82ePjY"
@@ -20,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "927497815977-6rvrjgvq8v150ldr6on2mdeb63hftcci.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

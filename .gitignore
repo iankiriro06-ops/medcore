@@ -6,3 +6,7 @@
 .externalNativeBuild
 .cxx
 *.iml
+app/debug/
+app/release/
+*.apk
+*.aab

@@ -60,7 +60,9 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons)        // ← added: needed for all icons
-
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     // ── Navigation ────────────────────────────────────────────────────────────
     implementation(libs.androidx.navigation.compose)            // ← fixed: was navigation-runtime-ktx
     //   (that one has no NavHost/composable())

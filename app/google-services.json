@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "927497815977-l7fcr2ukqt3glri1m64o0t5ijqta1krf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.medcore",
+            "certificate_hash": "37d3bcf245d0c1cb3efd8c09d7ddc126d6480ac5"
+          }
+        },
+        {
           "client_id": "927497815977-6rvrjgvq8v150ldr6on2mdeb63hftcci.apps.googleusercontent.com",
           "client_type": 3
         }

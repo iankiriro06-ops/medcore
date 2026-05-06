@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MedCore</string>
+    <string name="default_web_client_id">927497815977-6rvrjgvq8v150ldr6on2mdeb63hftcci.apps.googleusercontent.com</string>
 </resources>

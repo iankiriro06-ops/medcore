@@ -6,6 +6,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.medcore.ui.theme.screens.paymentScreen.PaymentScreen
 import com.medcore.app.ui.screens.HomeScreen
 import com.medcore.app.ui.screens.LoginScreen
 import com.example.medcore.ui.theme.screens.registerscreen.RegisterScreen
@@ -24,6 +25,7 @@ sealed class Screen(val route: String) {
     object Login        : Screen("login")
     object Register     : Screen("register")
     object Home         : Screen("home")
+    object Payment : Screen("payment")
     object SystemDetail : Screen("system/{systemId}") {
         fun createRoute(systemId: String) = "system/$systemId"
     }
@@ -132,7 +134,16 @@ fun MedCoreNavGraph(navController: NavHostController) {
         composable(Screen.Subscription.route) {
             SubscriptionScreen(
                 onBack    = { navController.popBackStack() },
-                onSuccess = { navController.popBackStack() }
+                onSuccess = { navController.navigate(Screen.Payment.route) }
+            )
+        }
+        composable(Screen.Payment.route) {
+            PaymentScreen(
+                onPaymentSuccess = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Subscription.route) { inclusive = true }
+                    }
+                }
             )
         }
 

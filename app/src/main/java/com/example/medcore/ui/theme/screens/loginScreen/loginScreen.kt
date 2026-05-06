@@ -1,5 +1,7 @@
 package com.medcore.app.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
@@ -10,10 +12,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
+import com.example.medcore.network.GoogleAuthClient
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseAuth
 import com.medcore.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -26,13 +33,45 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var rememberMe by remember { mutableStateOf(true) }
+    var isLoading by remember { mutableStateOf(false) }
+    var isGoogleLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    val auth = FirebaseAuth.getInstance()
+    val context = LocalContext.current
+    val googleAuthClient = remember { GoogleAuthClient(context) }
+
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            account.idToken?.let { token ->
+                isGoogleLoading = true
+                googleAuthClient.firebaseAuthWithGoogle(
+                    idToken = token,
+                    onSuccess = {
+                        isGoogleLoading = false
+                        onLoginSuccess()
+                    },
+                    onFailure = { error ->
+                        isGoogleLoading = false
+                        errorMessage = error
+                    }
+                )
+            }
+        } catch (e: ApiException) {
+            isGoogleLoading = false
+            errorMessage = "Google sign-in failed: ${e.message}"
+        }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(BackgroundDeep)
     ) {
-        // Background glow top-left
         Box(
             modifier = Modifier
                 .size(300.dp)
@@ -52,7 +91,10 @@ fun LoginScreen(
             Spacer(Modifier.height(72.dp))
 
             // Logo
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
                 Box(
                     modifier = Modifier
                         .size(40.dp)
@@ -69,28 +111,50 @@ fun LoginScreen(
 
             Text("Welcome back", style = MaterialTheme.typography.displaySmall, color = TextPrimary, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(8.dp))
-            Text("Sign in to continue your anatomy journey", style = MaterialTheme.typography.bodyMedium, color = TextSecondary, textAlign = TextAlign.Center)
+            Text(
+                "Sign in to continue your anatomy journey",
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextSecondary,
+                textAlign = TextAlign.Center
+            )
 
             Spacer(Modifier.height(40.dp))
 
             // Google sign-in button
             OutlinedButton(
-                onClick = onLoginSuccess,
+                onClick = {
+                    isGoogleLoading = true
+                    googleSignInLauncher.launch(googleAuthClient.getSignInIntent())
+                },
                 modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape  = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(14.dp),
                 border = BorderStroke(1.dp, BorderCard),
-                colors = ButtonDefaults.outlinedButtonColors(containerColor = BackgroundCard)
+                colors = ButtonDefaults.outlinedButtonColors(containerColor = BackgroundCard),
+                enabled = !isGoogleLoading
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("G", style = MaterialTheme.typography.titleLarge, color = Color(0xFF4285F4), fontWeight = FontWeight.Bold)
-                    Text("Continue with Google", style = MaterialTheme.typography.labelLarge, color = TextPrimary)
+                if (isGoogleLoading) {
+                    CircularProgressIndicator(
+                        color = CyanCore,
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text("G", style = MaterialTheme.typography.titleLarge, color = Color(0xFF4285F4), fontWeight = FontWeight.Bold)
+                        Text("Continue with Google", style = MaterialTheme.typography.labelLarge, color = TextPrimary)
+                    }
                 }
             }
 
             Spacer(Modifier.height(24.dp))
 
-            // Divider
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 Divider(modifier = Modifier.weight(1f), color = BorderSubtle)
                 Text("or", style = MaterialTheme.typography.bodySmall, color = TextMuted)
                 Divider(modifier = Modifier.weight(1f), color = BorderSubtle)
@@ -136,7 +200,6 @@ fun LoginScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // Remember me + Forgot password
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -146,10 +209,7 @@ fun LoginScreen(
                     Checkbox(
                         checked = rememberMe,
                         onCheckedChange = { rememberMe = it },
-                        colors = CheckboxDefaults.colors(
-                            checkedColor   = CyanCore,
-                            uncheckedColor = TextMuted
-                        )
+                        colors = CheckboxDefaults.colors(checkedColor = CyanCore, uncheckedColor = TextMuted)
                     )
                     Text("Remember me", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                 }
@@ -158,21 +218,61 @@ fun LoginScreen(
                 }
             }
 
+            // Error message
+            errorMessage?.let {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = it,
+                    color = Color(0xFFFF5252),
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             Spacer(Modifier.height(28.dp))
 
-            // Sign In CTA
+            // Sign In button
             Button(
-                onClick = onLoginSuccess,
+                onClick = {
+                    if (email.isBlank() || password.isBlank()) {
+                        errorMessage = "Please fill in all fields"
+                        return@Button
+                    }
+                    isLoading = true
+                    errorMessage = null
+                    auth.signInWithEmailAndPassword(email.trim(), password)
+                        .addOnSuccessListener {
+                            isLoading = false
+                            onLoginSuccess()
+                        }
+                        .addOnFailureListener { e ->
+                            isLoading = false
+                            errorMessage = when {
+                                e.message?.contains("password") == true -> "Incorrect password"
+                                e.message?.contains("user") == true -> "No account found with this email"
+                                else -> "Login failed. Please try again"
+                            }
+                        }
+                },
                 modifier = Modifier.fillMaxWidth().height(54.dp),
                 shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = CyanCore)
+                colors = ButtonDefaults.buttonColors(containerColor = CyanCore),
+                enabled = !isLoading && !isGoogleLoading
             ) {
-                Text("Sign In", style = MaterialTheme.typography.labelLarge, color = TextOnAccent, fontWeight = FontWeight.Bold)
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        color = TextOnAccent,
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Sign In", style = MaterialTheme.typography.labelLarge, color = TextOnAccent, fontWeight = FontWeight.Bold)
+                }
             }
 
             Spacer(Modifier.height(24.dp))
 
-            // Register link
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("New to MedCore? ", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
                 TextButton(onClick = onNavigateToRegister, contentPadding = PaddingValues(0.dp)) {
@@ -188,14 +288,13 @@ fun LoginScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun medCoreFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor   = CyanCore,
+    focusedBorderColor = CyanCore,
     unfocusedBorderColor = BorderSubtle,
-    focusedLabelColor    = CyanCore,
-    unfocusedLabelColor  = TextMuted,
-    cursorColor          = CyanCore,
-    focusedTextColor     = TextPrimary,
-    unfocusedTextColor   = TextPrimary,
-    focusedContainerColor   = BackgroundCard,
+    focusedLabelColor = CyanCore,
+    unfocusedLabelColor = TextMuted,
+    cursorColor = CyanCore,
+    focusedTextColor = TextPrimary,
+    unfocusedTextColor = TextPrimary,
+    focusedContainerColor = BackgroundCard,
     unfocusedContainerColor = BackgroundCard,
 )
-

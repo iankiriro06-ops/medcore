@@ -52,25 +52,30 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)   // ← added
     implementation(libs.androidx.activity.compose)
-
+    implementation("com.google.firebase:firebase-firestore-ktx")
     // ── Compose BOM ───────────────────────────────────────────────────────────
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.material.icons)        // ← added: needed for all icons
+    implementation(libs.androidx.compose.material.icons)
+    // ── Firebase ─────────────────────────────────────────────────────────────────
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-auth-ktx")// ← added: needed for all icons
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
     // ── Navigation ────────────────────────────────────────────────────────────
     implementation(libs.androidx.navigation.compose)            // ← fixed: was navigation-runtime-ktx
     //   (that one has no NavHost/composable())
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
 
     // ── Hilt ─────────────────────────────────────────────────────────────────
     implementation(libs.hilt.android)
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.database)                           // ← added
+    // ← added
     ksp(libs.hilt.android.compiler)                             // ← added: ksp(), NOT implementation
     implementation(libs.androidx.hilt.navigation.compose)       // ← added
 

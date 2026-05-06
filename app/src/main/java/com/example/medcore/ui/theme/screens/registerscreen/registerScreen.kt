@@ -14,8 +14,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.medcore.app.ui.screens.medCoreFieldColors
 import com.medcore.app.ui.theme.*
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,6 +33,11 @@ fun RegisterScreen(
     var confirm  by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var agreedToTerms   by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
 
     Box(
         modifier = Modifier
@@ -52,7 +61,6 @@ fun RegisterScreen(
         ) {
             Spacer(Modifier.height(56.dp))
 
-            // Back button
             Row(modifier = Modifier.fillMaxWidth()) {
                 IconButton(onClick = onNavigateBack) {
                     Icon(Icons.Filled.ArrowBack, "Back", tint = TextPrimary)
@@ -72,7 +80,6 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(36.dp))
 
-            // Full name
             OutlinedTextField(
                 value = fullName, onValueChange = { fullName = it },
                 label = { Text("Full name") },
@@ -85,7 +92,6 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(14.dp))
 
-            // Email
             OutlinedTextField(
                 value = email, onValueChange = { email = it },
                 label = { Text("Email address") },
@@ -99,15 +105,16 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(14.dp))
 
-            // Password
             OutlinedTextField(
                 value = password, onValueChange = { password = it },
                 label = { Text("Password") },
                 leadingIcon = { Icon(Icons.Filled.Lock, null, tint = TextSecondary, modifier = Modifier.size(18.dp)) },
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                            null, tint = TextSecondary, modifier = Modifier.size(18.dp))
+                        Icon(
+                            if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            null, tint = TextSecondary, modifier = Modifier.size(18.dp)
+                        )
                     }
                 },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -119,7 +126,6 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(14.dp))
 
-            // Confirm password
             OutlinedTextField(
                 value = confirm, onValueChange = { confirm = it },
                 label = { Text("Confirm password") },
@@ -134,7 +140,6 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            // Terms
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -145,22 +150,86 @@ fun RegisterScreen(
                     colors = CheckboxDefaults.colors(checkedColor = CyanCore, uncheckedColor = TextMuted)
                 )
                 Spacer(Modifier.width(4.dp))
-                Text(
-                    "I agree to the ",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
-                )
+                Text("I agree to the ", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                 Text("Terms of Service", style = MaterialTheme.typography.bodySmall, color = CyanCore)
                 Text(" & ", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                 Text("Privacy Policy", style = MaterialTheme.typography.bodySmall, color = CyanCore)
             }
 
+            // Error message
+            errorMessage?.let {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = it,
+                    color = Color(0xFFFF5252),
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             Spacer(Modifier.height(28.dp))
 
-            // CTA
             Button(
-                onClick = onRegisterSuccess,
-                enabled = agreedToTerms && fullName.isNotBlank() && email.isNotBlank() && password.isNotBlank(),
+                onClick = {
+                    // Validate inputs
+                    when {
+                        fullName.isBlank() || email.isBlank() || password.isBlank() -> {
+                            errorMessage = "Please fill in all fields"
+                            return@Button
+                        }
+                        password != confirm -> {
+                            errorMessage = "Passwords do not match"
+                            return@Button
+                        }
+                        password.length < 6 -> {
+                            errorMessage = "Password must be at least 6 characters"
+                            return@Button
+                        }
+                        !agreedToTerms -> {
+                            errorMessage = "Please agree to the terms"
+                            return@Button
+                        }
+                    }
+
+                    isLoading = true
+                    errorMessage = null
+
+                    // Create Firebase Auth account
+                    auth.createUserWithEmailAndPassword(email.trim(), password)
+                        .addOnSuccessListener { result ->
+                            val uid = result.user?.uid ?: return@addOnSuccessListener
+
+                            // Save user data to Firestore
+                            val userRecord = hashMapOf(
+                                "uid" to uid,
+                                "fullName" to fullName.trim(),
+                                "email" to email.trim(),
+                                "subscribed" to false,
+                                "createdAt" to System.currentTimeMillis()
+                            )
+
+                            db.collection("users").document(uid)
+                                .set(userRecord)
+                                .addOnSuccessListener {
+                                    isLoading = false
+                                    onRegisterSuccess()
+                                }
+                                .addOnFailureListener { e ->
+                                    isLoading = false
+                                    errorMessage = "Account created but profile save failed: ${e.message}"
+                                }
+                        }
+                        .addOnFailureListener { e ->
+                            isLoading = false
+                            errorMessage = when {
+                                e.message?.contains("email") == true -> "This email is already registered"
+                                e.message?.contains("password") == true -> "Password is too weak"
+                                else -> "Registration failed. Please try again"
+                            }
+                        }
+                },
+                enabled = !isLoading,
                 modifier = Modifier.fillMaxWidth().height(54.dp),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -168,7 +237,15 @@ fun RegisterScreen(
                     disabledContainerColor = BackgroundElevated
                 )
             ) {
-                Text("Create Account", style = MaterialTheme.typography.labelLarge, color = TextOnAccent, fontWeight = FontWeight.Bold)
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        color = TextOnAccent,
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Create Account", style = MaterialTheme.typography.labelLarge, color = TextOnAccent, fontWeight = FontWeight.Bold)
+                }
             }
 
             Spacer(Modifier.height(20.dp))
@@ -184,4 +261,3 @@ fun RegisterScreen(
         }
     }
 }
-

@@ -1,4 +1,4 @@
-package com.medcore.app.ui.theme
+package com.example.medcore.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

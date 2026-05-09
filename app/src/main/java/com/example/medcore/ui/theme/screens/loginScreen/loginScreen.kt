@@ -1,4 +1,4 @@
-package com.medcore.app.ui.screens
+package com.example.medcore.ui.theme.screens.loginScreen.LoginScreen
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,7 +21,7 @@ import com.example.medcore.network.GoogleAuthClient
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
-import com.medcore.app.ui.theme.*
+import com.example.medcore.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -248,11 +248,7 @@ fun LoginScreen(
                         }
                         .addOnFailureListener { e ->
                             isLoading = false
-                            errorMessage = when {
-                                e.message?.contains("password") == true -> "Incorrect password"
-                                e.message?.contains("user") == true -> "No account found with this email"
-                                else -> "Login failed. Please try again"
-                            }
+                            errorMessage = e.message // shows raw Firebase error
                         }
                 },
                 modifier = Modifier.fillMaxWidth().height(54.dp),

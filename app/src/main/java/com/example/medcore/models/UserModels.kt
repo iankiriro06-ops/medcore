@@ -1,7 +1,8 @@
-package com.medcore.app.data.models
+package com.example.medcore.models
 
 import androidx.compose.ui.graphics.Color
-import com.medcore.app.ui.theme.*
+import com.example.medcore.ui.theme.*
+
 
 // ── Subscription ───────────────────────────────────────────────────────────────
 

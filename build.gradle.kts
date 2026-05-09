@@ -5,5 +5,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)      apply false
     alias(libs.plugins.hilt)                apply false  // ← must be here
     alias(libs.plugins.ksp)                 apply false
-    alias(libs.plugins.google.gms.google.services) apply false  // ← must be here
+    alias(libs.plugins.google.gms.google.services) apply false
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.0" apply false// ← must be here
 }

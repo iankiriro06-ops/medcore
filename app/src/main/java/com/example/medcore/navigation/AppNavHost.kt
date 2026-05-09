@@ -1,14 +1,14 @@
-package com.medcore.app.navigation
+package com.example.medcore.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.medcore.ui.theme.screens.paymentScreen.PaymentScreen
-import com.medcore.app.ui.screens.HomeScreen
-import com.medcore.app.ui.screens.LoginScreen
+import com.example.medcore.ui.theme.screens.homescreen.HomeScreen
+import com.example.medcore.ui.theme.screens.loginScreen.LoginScreen.LoginScreen
 import com.example.medcore.ui.theme.screens.registerscreen.RegisterScreen
 import com.example.medcore.ui.theme.screens.splashscreen.SplashScreen
 import com.example.medcore.ui.theme.screens.subscriptionScreen.SubscriptionScreen
@@ -17,15 +17,13 @@ import com.example.medcore.ui.theme.screens.topicScreen.TopicScreen
 import com.example.medcore.ui.theme.screens.quizScreen.QuizScreen
 import com.example.medcore.ui.theme.screens.progressScreen.ProgressScreen
 import com.example.medcore.ui.theme.screens.profileScreen.ProfileScreen
-import com.medcore.app.ui.screens.*
-
+import com.example.medcore.viewmodel.UserViewModel
 
 sealed class Screen(val route: String) {
     object Splash       : Screen("splash")
     object Login        : Screen("login")
     object Register     : Screen("register")
     object Home         : Screen("home")
-    object Payment : Screen("payment")
     object SystemDetail : Screen("system/{systemId}") {
         fun createRoute(systemId: String) = "system/$systemId"
     }
@@ -42,8 +40,13 @@ sealed class Screen(val route: String) {
 
 @Composable
 fun MedCoreNavGraph(navController: NavHostController) {
+
+    // ── Single shared UserViewModel for the whole app ──────────────────────
+    // This ensures HomeScreen and ProfileScreen always see the same user data
+    val userViewModel: UserViewModel = viewModel()
+
     NavHost(
-        navController  = navController,
+        navController    = navController,
         startDestination = Screen.Splash.route
     ) {
         composable(Screen.Splash.route) {
@@ -57,19 +60,19 @@ fun MedCoreNavGraph(navController: NavHostController) {
         composable(Screen.Login.route) {
             LoginScreen(
                 onLoginSuccess = {
+                    userViewModel.loadUser() // ← load user on login
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
-                onNavigateToRegister = {
-                    navController.navigate(Screen.Register.route)
-                }
+                onNavigateToRegister = { navController.navigate(Screen.Register.route) }
             )
         }
 
         composable(Screen.Register.route) {
             RegisterScreen(
                 onRegisterSuccess = {
+                    userViewModel.loadUser() // ← load user after register
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
@@ -80,10 +83,11 @@ fun MedCoreNavGraph(navController: NavHostController) {
 
         composable(Screen.Home.route) {
             HomeScreen(
-                onSystemClick   = { id -> navController.navigate(Screen.SystemDetail.createRoute(id)) },
-                onProgressClick = { navController.navigate(Screen.Progress.route) },
-                onProfileClick  = { navController.navigate(Screen.Profile.route) },
-                onSubscribeClick = { navController.navigate(Screen.Subscription.route) }
+                onSystemClick    = { id -> navController.navigate(Screen.SystemDetail.createRoute(id)) },
+                onProgressClick  = { navController.navigate(Screen.Progress.route) },
+                onProfileClick   = { navController.navigate(Screen.Profile.route) },
+                onSubscribeClick = { navController.navigate(Screen.Subscription.route) },
+                userViewModel    = userViewModel // ← pass shared instance
             )
         }
 
@@ -93,10 +97,10 @@ fun MedCoreNavGraph(navController: NavHostController) {
         ) { back ->
             val systemId = back.arguments?.getString("systemId") ?: ""
             SystemDetailScreen(
-                systemId        = systemId,
-                onBack          = { navController.popBackStack() },
-                onTopicClick    = { id -> navController.navigate(Screen.Topic.createRoute(id)) },
-                onQuizClick     = { navController.navigate(Screen.Quiz.createRoute(systemId)) },
+                systemId         = systemId,
+                onBack           = { navController.popBackStack() },
+                onTopicClick     = { id -> navController.navigate(Screen.Topic.createRoute(id)) },
+                onQuizClick      = { navController.navigate(Screen.Quiz.createRoute(systemId)) },
                 onSubscribeClick = { navController.navigate(Screen.Subscription.route) }
             )
         }
@@ -107,8 +111,8 @@ fun MedCoreNavGraph(navController: NavHostController) {
         ) { back ->
             val topicId = back.arguments?.getString("topicId") ?: ""
             TopicScreen(
-                topicId  = topicId,
-                onBack   = { navController.popBackStack() },
+                topicId     = topicId,
+                onBack      = { navController.popBackStack() },
                 onQuizClick = { navController.navigate(Screen.Quiz.createRoute("neuro")) }
             )
         }
@@ -126,7 +130,7 @@ fun MedCoreNavGraph(navController: NavHostController) {
 
         composable(Screen.Progress.route) {
             ProgressScreen(
-                onBack          = { navController.popBackStack() },
+                onBack           = { navController.popBackStack() },
                 onSubscribeClick = { navController.navigate(Screen.Subscription.route) }
             )
         }
@@ -134,12 +138,8 @@ fun MedCoreNavGraph(navController: NavHostController) {
         composable(Screen.Subscription.route) {
             SubscriptionScreen(
                 onBack    = { navController.popBackStack() },
-                onSuccess = { navController.navigate(Screen.Payment.route) }
-            )
-        }
-        composable(Screen.Payment.route) {
-            PaymentScreen(
-                onPaymentSuccess = {
+                // ← onSuccess now just goes back to home, no separate PaymentScreen
+                onSuccess = {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Subscription.route) { inclusive = true }
                     }
@@ -149,13 +149,15 @@ fun MedCoreNavGraph(navController: NavHostController) {
 
         composable(Screen.Profile.route) {
             ProfileScreen(
-                onBack          = { navController.popBackStack() },
+                onBack           = { navController.popBackStack() },
                 onSubscribeClick = { navController.navigate(Screen.Subscription.route) },
                 onSignOut        = {
+                    userViewModel.clearUser() // ← clear user on sign out
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Home.route) { inclusive = true }
                     }
-                }
+                },
+                userViewModel = userViewModel // ← pass shared instance
             )
         }
     }

@@ -1,10 +1,7 @@
-package com.medcore.app.ui.theme
+package com.example.medcore.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
-import com.example.medcore.ui.theme.MedCoreTypography
 
 private val MedCoreDarkColorScheme = darkColorScheme(
     primary            = CyanCore,
@@ -41,7 +38,7 @@ private val MedCoreDarkColorScheme = darkColorScheme(
 
 @Composable
 fun MedCoreTheme(
-    darkTheme: Boolean = true, // Always dark by default
+    darkTheme: Boolean = true,
     content: @Composable () -> Unit
 ) {
     MaterialTheme(

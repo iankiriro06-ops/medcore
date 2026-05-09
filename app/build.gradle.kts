@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
     alias(libs.plugins.google.gms.google.services)
+    id("org.jetbrains.kotlin.plugin.serialization")
+
 }
 android {
     namespace  = "com.example.medcore"
@@ -47,12 +49,13 @@ kotlin {
 }
 
 dependencies {
+    implementation("com.google.android.material:material:1.12.0")
     // ── Core ──────────────────────────────────────────────────────────────────
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)   // ← added
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
-    implementation("com.google.firebase:firebase-firestore-ktx")
+
     // ── Compose BOM ───────────────────────────────────────────────────────────
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
@@ -60,38 +63,43 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons)
-    // ── Firebase ─────────────────────────────────────────────────────────────────
+
+    // ── Firebase BOM (must come before all firebase deps) ────────────────────
     implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
+    implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
-    implementation("com.google.firebase:firebase-auth-ktx")// ← added: needed for all icons
+
+    // ── Google Sign-In ────────────────────────────────────────────────────────
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+
+    // ── Retrofit ─────────────────────────────────────────────────────────────
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     // ── Navigation ────────────────────────────────────────────────────────────
-    implementation(libs.androidx.navigation.compose)            // ← fixed: was navigation-runtime-ktx
-    //   (that one has no NavHost/composable())
-    implementation("com.google.android.gms:play-services-auth:21.2.0")
+    implementation(libs.androidx.navigation.compose)
 
     // ── Hilt ─────────────────────────────────────────────────────────────────
     implementation(libs.hilt.android)
-    // ← added
-    ksp(libs.hilt.android.compiler)                             // ← added: ksp(), NOT implementation
-    implementation(libs.androidx.hilt.navigation.compose)       // ← added
+
+
+    ksp(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
 
     // ── Room ─────────────────────────────────────────────────────────────────
-    implementation(libs.androidx.room.runtime)                  // ← added
-    implementation(libs.androidx.room.ktx)                      // ← added
-    ksp(libs.androidx.room.compiler)                            // ← added: ksp(), NOT implementation
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
     // ── DataStore ─────────────────────────────────────────────────────────────
-    implementation(libs.androidx.datastore.preferences)         // ← added
+    implementation(libs.androidx.datastore.preferences)
 
     // ── Images ────────────────────────────────────────────────────────────────
-    implementation(libs.coil.compose)                           // ← added
+    implementation(libs.coil.compose)
 
     // ── Splash screen ─────────────────────────────────────────────────────────
-    implementation(libs.androidx.core.splashscreen)             // ← added
+    implementation(libs.androidx.core.splashscreen)
 
     // ── Testing ───────────────────────────────────────────────────────────────
     testImplementation(libs.junit)
@@ -101,6 +109,4 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    // ← removed: libs.androidx.navigation.runtime.ktx  (wrong artifact)
-    // ← removed: libs.androidx.compose.material3.lint  (lint artifact, not a runtime dep)
 }

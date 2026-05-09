@@ -16,8 +16,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.medcore.app.ui.screens.medCoreFieldColors
-import com.medcore.app.ui.theme.*
+
+import com.example.medcore.ui.theme.*
 
 
 

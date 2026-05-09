@@ -8,9 +8,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
-import com.medcore.app.navigation.MedCoreNavGraph
-import com.medcore.app.ui.theme.BackgroundDeep
-import com.medcore.app.ui.theme.MedCoreTheme
+import com.example.medcore.navigation.MedCoreNavGraph
+import com.example.medcore.ui.theme.BackgroundDeep
+import com.example.medcore.ui.theme.MedCoreTheme
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

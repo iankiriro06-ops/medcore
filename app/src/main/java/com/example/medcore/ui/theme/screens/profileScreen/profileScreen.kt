@@ -46,11 +46,12 @@ fun ProfileScreen(
     var notificationsEnabled by remember { mutableStateOf(true) }
     var darkModeEnabled      by remember { mutableStateOf(true) }
     var showSignOutDialog    by remember { mutableStateOf(false) }
+    var showDeleteDialog     by remember { mutableStateOf(false) }
     var showEditSheet        by remember { mutableStateOf(false) }
 
     // ── Edit profile state ────────────────────────────────────────────────────
-    var editName        by remember { mutableStateOf("") }
-    var editPhotoUrl    by remember { mutableStateOf("") }
+    var editName         by remember { mutableStateOf("") }
+    var editPhotoUrl     by remember { mutableStateOf("") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
     // Gallery picker
@@ -66,8 +67,8 @@ fun ProfileScreen(
     // Pre-fill edit fields when sheet opens
     LaunchedEffect(showEditSheet) {
         if (showEditSheet) {
-            editName     = userProfile?.fullName ?: ""
-            editPhotoUrl = userProfile?.photoUrl ?: ""
+            editName         = userProfile?.fullName ?: ""
+            editPhotoUrl     = userProfile?.photoUrl ?: ""
             selectedImageUri = null
         }
     }
@@ -92,12 +93,53 @@ fun ProfileScreen(
         )
     }
 
+    // ── Delete account dialog ─────────────────────────────────────────────────
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            containerColor   = BackgroundCard,
+            title = {
+                Text(
+                    "Delete Account",
+                    color      = Color(0xFFE05252),
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    "This will permanently delete your account and all your progress. This cannot be undone.",
+                    color = TextSecondary
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteDialog = false
+                    userViewModel.deleteAccount(
+                        onSuccess = { onSignOut() },
+                        onError   = { /* optionally show a snackbar */ }
+                    )
+                }) {
+                    Text(
+                        "Delete Forever",
+                        color      = Color(0xFFE05252),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel", color = TextMuted)
+                }
+            }
+        )
+    }
+
     // ── Edit Profile bottom sheet ─────────────────────────────────────────────
     if (showEditSheet) {
         ModalBottomSheet(
-            onDismissRequest  = { showEditSheet = false },
-            containerColor    = BackgroundCard,
-            dragHandle        = {
+            onDismissRequest = { showEditSheet = false },
+            containerColor   = BackgroundCard,
+            dragHandle       = {
                 Box(
                     modifier = Modifier
                         .padding(vertical = 12.dp)
@@ -124,7 +166,6 @@ fun ProfileScreen(
 
                 // Avatar preview + change options
                 Box(contentAlignment = Alignment.BottomEnd) {
-                    // Avatar
                     Box(
                         modifier = Modifier
                             .size(90.dp)
@@ -136,10 +177,10 @@ fun ProfileScreen(
                         val photoToShow = selectedImageUri?.toString() ?: editPhotoUrl
                         if (photoToShow.isNotEmpty()) {
                             AsyncImage(
-                                model             = photoToShow,
+                                model              = photoToShow,
                                 contentDescription = "Profile photo",
-                                contentScale      = ContentScale.Crop,
-                                modifier          = Modifier.fillMaxSize()
+                                contentScale       = ContentScale.Crop,
+                                modifier           = Modifier.fillMaxSize()
                             )
                         } else {
                             Text(
@@ -151,7 +192,6 @@ fun ProfileScreen(
                         }
                     }
 
-                    // Edit badge
                     Box(
                         modifier = Modifier
                             .size(28.dp)
@@ -169,11 +209,7 @@ fun ProfileScreen(
 
                 Spacer(Modifier.height(16.dp))
 
-                // Photo source buttons
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // From gallery
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedButton(
                         onClick = { galleryLauncher.launch("image/*") },
                         shape   = RoundedCornerShape(12.dp),
@@ -189,7 +225,6 @@ fun ProfileScreen(
                         Text("Gallery", style = MaterialTheme.typography.labelMedium, color = TextPrimary)
                     }
 
-                    // Use Google photo
                     val googlePhotoUrl = FirebaseAuth.getInstance().currentUser?.photoUrl?.toString() ?: ""
                     if (googlePhotoUrl.isNotEmpty()) {
                         OutlinedButton(
@@ -215,7 +250,6 @@ fun ProfileScreen(
 
                 Spacer(Modifier.height(24.dp))
 
-                // Name field
                 OutlinedTextField(
                     value         = editName,
                     onValueChange = { editName = it },
@@ -223,15 +257,14 @@ fun ProfileScreen(
                     leadingIcon   = {
                         Icon(Icons.Filled.Person, null, tint = TextSecondary, modifier = Modifier.size(18.dp))
                     },
-                    modifier      = Modifier.fillMaxWidth(),
-                    shape         = RoundedCornerShape(14.dp),
-                    singleLine    = true,
-                    colors        = medCoreFieldColors()
+                    modifier   = Modifier.fillMaxWidth(),
+                    shape      = RoundedCornerShape(14.dp),
+                    singleLine = true,
+                    colors     = medCoreFieldColors()
                 )
 
                 Spacer(Modifier.height(28.dp))
 
-                // Save button
                 Button(
                     onClick = {
                         userViewModel.updateProfile(
@@ -281,6 +314,13 @@ fun ProfileScreen(
                 Icons.Outlined.ExitToApp, "Sign Out",
                 isDestructive = true, tint = Color(0xFFE05252)
             ) { showSignOutDialog = true },
+            SettingsItem(
+                Icons.Outlined.DeleteForever,
+                "Delete Account",
+                subtitle      = "Permanently remove your data",
+                isDestructive = true,
+                tint          = Color(0xFFE05252)
+            ) { showDeleteDialog = true },
         ),
     )
 
@@ -311,7 +351,6 @@ fun ProfileScreen(
                     .padding(horizontal = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Tappable avatar — opens edit sheet
                 Box(
                     modifier = Modifier
                         .size(88.dp)
@@ -339,7 +378,6 @@ fun ProfileScreen(
                     }
                 }
 
-                // Small edit hint
                 Text(
                     "Tap to edit",
                     style    = MaterialTheme.typography.labelSmall,
@@ -402,10 +440,10 @@ fun ProfileScreen(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment     = Alignment.CenterVertically
                     ) {
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
+                            verticalAlignment     = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Icon(Icons.Filled.Star, null, tint = GoldPremium, modifier = Modifier.size(22.dp))
@@ -440,8 +478,8 @@ fun ProfileScreen(
                 ) {
                     items.forEachIndexed { index, item ->
                         SettingsRow(
-                            item = item,
-                            showToggle = item.label == "Notifications" || item.label == "Dark Mode",
+                            item        = item,
+                            showToggle  = item.label == "Notifications" || item.label == "Dark Mode",
                             toggleState = when (item.label) {
                                 "Notifications" -> notificationsEnabled
                                 "Dark Mode"     -> darkModeEnabled
@@ -522,9 +560,9 @@ private fun SettingsRow(item: SettingsItem, showToggle: Boolean, toggleState: Bo
         }
         if (showToggle) {
             Switch(
-                checked          = toggleState,
-                onCheckedChange  = { item.onClick() },
-                colors           = SwitchDefaults.colors(
+                checked         = toggleState,
+                onCheckedChange = { item.onClick() },
+                colors          = SwitchDefaults.colors(
                     checkedThumbColor   = Color.White,
                     checkedTrackColor   = CyanCore,
                     uncheckedThumbColor = TextMuted,

@@ -15,7 +15,7 @@ data class UserProfile(
     val email: String = "",
     val subscribed: Boolean = false,
     val streakDays: Int = 0,
-    val photoUrl: String = ""   // stores photo URL (Google or gallery)
+    val photoUrl: String = ""
 )
 
 class UserViewModel : ViewModel() {
@@ -64,7 +64,6 @@ class UserViewModel : ViewModel() {
         }
     }
 
-    // ── Save new name + photo to Firestore and update local state ────────────
     fun updateProfile(newName: String, newPhotoUrl: String) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         viewModelScope.launch {
@@ -80,6 +79,29 @@ class UserViewModel : ViewModel() {
                 )
             } catch (e: Exception) {
                 println("updateProfile error: ${e.message}")
+            }
+        }
+    }
+
+    fun deleteAccount(onSuccess: () -> Unit, onError: (String) -> Unit) {
+        val firebaseUser = FirebaseAuth.getInstance().currentUser ?: return
+        val uid = firebaseUser.uid
+        viewModelScope.launch {
+            try {
+                // Delete Firestore document (all user data)
+                FirebaseFirestore.getInstance()
+                    .collection("users").document(uid)
+                    .delete().await()
+
+                // Delete the Firebase Auth account (the login)
+                firebaseUser.delete().await()
+
+                // Wipe local state
+                _user.value = null
+
+                onSuccess()
+            } catch (e: Exception) {
+                onError(e.message ?: "Failed to delete account")
             }
         }
     }
